@@ -18,25 +18,25 @@ jobs:
             build_script: |
               cmake -DCMAKE_BUILD_TYPE=Release -B build
               cmake --build build --parallel
-              cp build/flatcc bin/flatcc
-              cp build/libflatcc.a lib/libflatcc.a
-              cp build/libflatccrt.a lib/libflatccrt.a
+              cp bin/flatcc ../bin/flatcc
+              cp lib/libflatcc.a ../lib/libflatcc.a
+              cp lib/libflatccrt.a ../lib/libflatccrt.a
           - os: macos-latest
             zip_name: flatcc-macos.zip
             build_script: |
               cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -B build
               cmake --build build --parallel
-              cp build/flatcc bin/flatcc
-              cp build/libflatcc.a lib/libflatcc.a
-              cp build/libflatccrt.a lib/libflatccrt.a
+              cp bin/flatcc ../bin/flatcc
+              cp lib/libflatcc.a ../lib/libflatcc.a
+              cp lib/libflatccrt.a ../lib/libflatccrt.a
           - os: windows-latest
             zip_name: flatcc-windows.zip
             build_script: |
               cmake -DCMAKE_BUILD_TYPE=Release -G "MinGW Makefiles" -B build
               cmake --build build --parallel
-              move build\\flatcc.exe bin\\flatcc.exe
-              move build\\libflatcc.a lib\\libflatcc.a
-              move build\\libflatccrt.a lib\\libflatccrt.a
+              move bin\\flatcc.exe ..\\bin\\flatcc.exe
+              move lib\\libflatcc.a ..\\lib\\libflatcc.a
+              move lib\\libflatccrt.a ..\\lib\\libflatccrt.a
 
     steps:
       # Check out the workflow repository
