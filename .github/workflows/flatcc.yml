@@ -125,7 +125,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            assets/flatcc-linux.zip
+            flatcc-dist/assets/flatcc-linux.zip
 #            assets/flatcc-macos.zip
 #            assets/flatcc-windows.zip
         env:
