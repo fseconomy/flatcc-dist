@@ -16,7 +16,6 @@ jobs:
           - os: ubuntu-latest
             zip_name: flatcc-linux.zip
             build_script: |
-              mkdir -p bin lib
               cmake -DCMAKE_BUILD_TYPE=Release -B build
               cmake --build build --parallel
               cp build/flatcc bin/flatcc
@@ -25,7 +24,6 @@ jobs:
           - os: macos-latest
             zip_name: flatcc-macos.zip
             build_script: |
-              mkdir -p bin lib
               cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -B build
               cmake --build build --parallel
               cp build/flatcc bin/flatcc
@@ -34,7 +32,6 @@ jobs:
           - os: windows-latest
             zip_name: flatcc-windows.zip
             build_script: |
-              mkdir bin lib
               cmake -DCMAKE_BUILD_TYPE=Release -G "MinGW Makefiles" -B build
               cmake --build build --parallel
               move build\\flatcc.exe bin\\flatcc.exe
@@ -57,6 +54,17 @@ jobs:
         run: |
           mkdir -p bin lib include
           cp -r flatcc/include include/
+          cp flatcc/LICENSE .
+        if: runner.os != 'Windows'
+
+      - name: Prepare Directories (Windows)
+        run: |
+          mkdir bin
+          mkdir lib
+          mkdir include
+          Copy-Item -Recurse flatcc\include include
+          Copy-Item flatcc\LICENSE .
+        if: runner.os == 'Windows'
 
       # Install dependencies
       - name: Install Dependencies (Linux)
@@ -80,10 +88,9 @@ jobs:
           cd flatcc
           ${{ matrix.build_script }}
 
-      # Add LICENSE file and create ZIP Archive
+      # Create ZIP Archive
       - name: Create ZIP Archive
         run: |
-          cp flatcc/LICENSE .
           zip -r ${{ matrix.zip_name }} bin lib include LICENSE
 
       # Upload Artifacts for Release
