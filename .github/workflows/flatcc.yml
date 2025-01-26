@@ -123,6 +123,8 @@ jobs:
       - name: List Artifacts
         run: |
           ls -lhrt assets
+          ls -lhrt assets/*/
+          ls -lhrt assets/flatcc-linux.zip/
 
       # Create GitHub Release
       - name: Create GitHub Release
