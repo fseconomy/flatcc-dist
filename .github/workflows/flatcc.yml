@@ -112,14 +112,18 @@ jobs:
       # Create directory structure
       - name: Prepare Directories
         run: |
-          mkdir -p ~/assets
+          mkdir -p assets
 
       # Download Artifacts from All Jobs
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
         with:
-          path: ~/assets
+          path: assets
       
+      - name: List Artifacts
+        run: |
+          ls -lhrt assets
+
       # Create GitHub Release
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
