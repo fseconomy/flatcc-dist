@@ -14,7 +14,7 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         include:
           - os: ubuntu-latest
-            zip_name: flatcc-linux.zip
+            zip_name: flatcc-linuxp
             build_script: |
               cmake -DCMAKE_BUILD_TYPE=Release -B build
               cmake --build build --parallel
@@ -22,7 +22,7 @@ jobs:
               cp lib/libflatcc.a ../lib/libflatcc.a
               cp lib/libflatccrt.a ../lib/libflatccrt.a
           - os: macos-latest
-            zip_name: flatcc-macos.zip
+            zip_name: flatcc-macos
             build_script: |
               cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -B build
               cmake --build build --parallel
@@ -30,7 +30,7 @@ jobs:
               cp lib/libflatcc.a ../lib/libflatcc.a
               cp lib/libflatccrt.a ../lib/libflatccrt.a
           - os: windows-latest
-            zip_name: flatcc-windows.zip
+            zip_name: flatcc-windows
             build_script: |
               cmake -DCMAKE_BUILD_TYPE=Release -G "MinGW Makefiles" -B build
               cmake --build build --parallel
@@ -53,7 +53,7 @@ jobs:
       - name: Prepare Directories
         run: |
           mkdir -p bin lib include
-          cp -r flatcc/include include/
+          cp -r flatcc/include/flatcc include/
           cp flatcc/LICENSE .
         if: runner.os != 'Windows'
 
@@ -62,8 +62,8 @@ jobs:
           mkdir bin
           mkdir lib
           mkdir include
-          Copy-Item -Recurse flatcc\include include
-          Copy-Item flatcc\LICENSE .
+          Copy-Item -Recurse flatcc\\include\\flatcc include
+          Copy-Item flatcc\\LICENSE .
         if: runner.os == 'Windows'
 
       # Install dependencies
@@ -88,23 +88,16 @@ jobs:
           cd flatcc
           ${{ matrix.build_script }}
 
-      # Create ZIP Archive
-      - name: Create ZIP Archive
-        run: |
-          zip -r ${{ matrix.zip_name }} bin lib include LICENSE
-        if: runner.os != 'Windows'
-      
-      - name: Create ZIP Archive (Windows)
-        run: |
-          Compress-Archive -Path bin, lib, include, LICENSE -DestinationPath flatcc-windows.zip
-        if: runner.os == 'Windows'
-
       # Upload Artifacts for Release
       - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.zip_name }}
-          path: ${{ matrix.zip_name }}
+          path: |
+            bin/
+            lib/
+            include/
+            LICENSE
 
   release:
     name: Create Release and Upload Binaries
@@ -117,10 +110,10 @@ jobs:
 
       # Download Artifacts from All Jobs
       - name: Download Build Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: .
-
+      
       # Create GitHub Release
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
