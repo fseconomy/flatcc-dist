@@ -92,6 +92,12 @@ jobs:
       - name: Create ZIP Archive
         run: |
           zip -r ${{ matrix.zip_name }} bin lib include LICENSE
+        if: runner.os != 'Windows'
+      
+      - name: Create ZIP Archive (Windows)
+        run: |
+          Compress-Archive -Path bin, lib, include, LICENSE -DestinationPath flatcc-windows.zip
+        if: runner.os == 'Windows'
 
       # Upload Artifacts for Release
       - name: Upload Build Artifacts
