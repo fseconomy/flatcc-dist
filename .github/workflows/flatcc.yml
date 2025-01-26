@@ -14,29 +14,29 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         include:
           - os: ubuntu-latest
-            zip_name: flatcc-linuxp
+            zip_name: flatcc-linux.zip
             build_script: |
               cmake -DCMAKE_BUILD_TYPE=Release -B build
               cmake --build build --parallel
               cp bin/flatcc ../bin/flatcc
               cp lib/libflatcc.a ../lib/libflatcc.a
               cp lib/libflatccrt.a ../lib/libflatccrt.a
-          - os: macos-latest
-            zip_name: flatcc-macos
-            build_script: |
-              cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -B build
-              cmake --build build --parallel
-              cp bin/flatcc ../bin/flatcc
-              cp lib/libflatcc.a ../lib/libflatcc.a
-              cp lib/libflatccrt.a ../lib/libflatccrt.a
-          - os: windows-latest
-            zip_name: flatcc-windows
-            build_script: |
-              cmake -DCMAKE_BUILD_TYPE=Release -G "MinGW Makefiles" -B build
-              cmake --build build --parallel
-              move bin\\flatcc.exe ..\\bin\\flatcc.exe
-              move lib\\libflatcc.a ..\\lib\\libflatcc.a
-              move lib\\libflatccrt.a ..\\lib\\libflatccrt.a
+#          - os: macos-latest
+#            zip_name: flatcc-macos.zip
+#            build_script: |
+#              cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -B build
+#              cmake --build build --parallel
+#              cp bin/flatcc ../bin/flatcc
+#              cp lib/libflatcc.a ../lib/libflatcc.a
+#              cp lib/libflatccrt.a ../lib/libflatccrt.a
+#          - os: windows-latest
+#            zip_name: flatcc-windows.zip
+#            build_script: |
+#              cmake -DCMAKE_BUILD_TYPE=Release -G "MinGW Makefiles" -B build
+#              cmake --build build --parallel
+#              move bin\\flatcc.exe ..\\bin\\flatcc.exe
+#              move lib\\libflatcc.a ..\\lib\\libflatcc.a
+#              move lib\\libflatccrt.a ..\\lib\\libflatccrt.a
 
     steps:
       # Check out the workflow repository
@@ -108,19 +108,24 @@ jobs:
       - name: Checkout Workflow Repo
         uses: actions/checkout@v4
 
+      # Create directory structure
+      - name: Prepare Directories
+        run: |
+          mkdir -p assets
+
       # Download Artifacts from All Jobs
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
         with:
-          path: .
+          path: assets
       
       # Create GitHub Release
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
-            flatcc-linux.zip
-            flatcc-macos.zip
-            flatcc-windows.zip
+            assets/flatcc-linux.zip
+#            assets/flatcc-macos.zip
+#            assets/flatcc-windows.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
