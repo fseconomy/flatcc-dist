@@ -128,5 +128,5 @@ jobs:
             /assets/flatcc-linux.zip
 #            assets/flatcc-macos.zip
 #            assets/flatcc-windows.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
