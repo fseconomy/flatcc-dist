@@ -89,16 +89,23 @@ jobs:
           cd flatcc
           ${{ matrix.build_script }}
 
+      # Create ZIP Archive
+      - name: Create ZIP Archive
+        run: |
+          zip -r ${{ matrix.zip_name }} bin lib include LICENSE
+        if: runner.os != 'Windows'
+      
+      - name: Create ZIP Archive (Windows)
+        run: |
+          Compress-Archive -Path bin, lib, include, LICENSE -DestinationPath flatcc-windows.zip
+        if: runner.os == 'Windows'
+    
       # Upload Artifacts for Release
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.zip_name }}
-          path: |
-            bin/
-            lib/
-            include/
-            LICENSE
+          path: ${{ matrix.zip_name }}
 
   release:
     name: Create Release and Upload Binaries
@@ -130,6 +137,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          fail_on_unmatched_files: true
           files: |
             assets/flatcc-linux.zip/flatcc-linux.zip
 #            assets/flatcc-macos.zip
