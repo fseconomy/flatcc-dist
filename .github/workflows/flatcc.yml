@@ -1,0 +1,120 @@
+name: Build and Release FlatCC
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+    name: Build FlatCC
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            zip_name: flatcc-linux.zip
+            build_script: |
+              mkdir -p bin lib
+              cmake -DCMAKE_BUILD_TYPE=Release -B build
+              cmake --build build --parallel
+              cp build/flatcc bin/flatcc
+              cp build/libflatcc.a lib/libflatcc.a
+              cp build/libflatccrt.a lib/libflatccrt.a
+          - os: macos-latest
+            zip_name: flatcc-macos.zip
+            build_script: |
+              mkdir -p bin lib
+              cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -B build
+              cmake --build build --parallel
+              cp build/flatcc bin/flatcc
+              cp build/libflatcc.a lib/libflatcc.a
+              cp build/libflatccrt.a lib/libflatccrt.a
+          - os: windows-latest
+            zip_name: flatcc-windows.zip
+            build_script: |
+              mkdir bin lib
+              cmake -DCMAKE_BUILD_TYPE=Release -G "MinGW Makefiles" -B build
+              cmake --build build --parallel
+              move build\\flatcc.exe bin\\flatcc.exe
+              move build\\libflatcc.a lib\\libflatcc.a
+              move build\\libflatccrt.a lib\\libflatccrt.a
+
+    steps:
+      # Check out the workflow repository
+      - name: Checkout Workflow Repo
+        uses: actions/checkout@v4
+
+      # Clone the FlatCC repository
+      - name: Clone FlatCC Repository
+        run: |
+          git clone https://github.com/dvidelabs/flatcc.git
+          cd flatcc
+
+      # Prepare directories and copy includes
+      - name: Prepare Directories
+        run: |
+          mkdir -p bin lib include
+          cp -r flatcc/include include/
+
+      # Install dependencies
+      - name: Install Dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake
+      - name: Install Dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install cmake
+      - name: Install Dependencies (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          choco install -y mingw
+          choco install -y cmake
+
+      # Build FlatCC
+      - name: Build FlatCC
+        run: |
+          cd flatcc
+          ${{ matrix.build_script }}
+
+      # Add LICENSE file and create ZIP Archive
+      - name: Create ZIP Archive
+        run: |
+          cp flatcc/LICENSE .
+          zip -r ${{ matrix.zip_name }} bin lib include LICENSE
+
+      # Upload Artifacts for Release
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.zip_name }}
+          path: ${{ matrix.zip_name }}
+
+  release:
+    name: Create Release and Upload Binaries
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      # Check out the workflow repository
+      - name: Checkout Workflow Repo
+        uses: actions/checkout@v4
+
+      # Download Artifacts from All Jobs
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: .
+
+      # Create GitHub Release
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            flatcc-linux.zip
+            flatcc-macos.zip
+            flatcc-windows.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
